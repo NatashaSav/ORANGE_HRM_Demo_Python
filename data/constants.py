@@ -13,3 +13,12 @@ INVALID_USERNAME = "invalid_user"
 INVALID_PASSWORD = "invalid_password"
 
 EMPTY_FIELD = ""
+
+QUICK_LAUNCH_BUTTON_NAMES = [
+    "Assign Leave",
+    "Leave List",
+    "Timesheets",
+    "Apply Leave",
+    "My Leave",
+    "My Timesheet",
+]
