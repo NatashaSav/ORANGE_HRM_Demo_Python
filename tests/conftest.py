@@ -1,11 +1,15 @@
-from typing import Generator
+from collections.abc import Callable, Generator
 
 import pytest
 from playwright.sync_api import Browser, BrowserContext, Page
 
 from data.constants import DASHBOARD_URL, VALID_PASSWORD, VALID_USERNAME
+
+from pages.add_employee_page import AddEmployeePage
 from pages.dashboard_page import DashboardPage
 from pages.login_page import LoginPage
+from pages.personal_details_page import PersonalDetailsPage
+from pages.pim_page import PIMPage
 
 
 @pytest.fixture(scope="session")
@@ -61,3 +65,52 @@ def login_page(page: Page) -> LoginPage:
 @pytest.fixture
 def dashboard_page(authenticated_page: Page) -> DashboardPage:
     return DashboardPage(authenticated_page)
+
+
+@pytest.fixture
+def pim_page(authenticated_page: Page) -> PIMPage:
+    pim_page = PIMPage(authenticated_page)
+    pim_page.open()
+    return pim_page
+
+
+@pytest.fixture
+def add_employee_page(authenticated_page) -> AddEmployeePage:
+    return AddEmployeePage(authenticated_page)
+
+
+@pytest.fixture
+def personal_details_page(authenticated_page) -> PersonalDetailsPage:
+    return PersonalDetailsPage(authenticated_page)
+
+
+@pytest.fixture
+def employee_cleanup(
+    pim_page: PIMPage,
+) -> Generator[Callable[[dict[str, str]], None], None, None]:
+    employee_id: str | None = None
+
+    def register(employee: dict[str, str]) -> None:
+        nonlocal employee_id
+        employee_id = employee["employee_id"]
+
+    yield register
+
+    if employee_id is not None:
+        pim_page.open_employee_list()
+        pim_page.search_employee(employee_id=employee_id)
+        employee_row = pim_page.get_row_by_employee_id(employee_id)
+        if employee_row.count() > 0:
+            pim_page.delete_employee_by_id(employee_id)
+
+
+@pytest.fixture
+def created_employee(
+    pim_page: PIMPage,
+    add_employee_page: AddEmployeePage,
+    employee_cleanup: Callable[[dict[str, str]], None],
+) -> Generator[dict[str, str], None, None]:
+    employee = pim_page.create_employee(add_employee_page)
+    employee_cleanup(employee)
+
+    yield employee

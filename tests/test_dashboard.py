@@ -8,7 +8,7 @@ from data.expected_messages import ExpectedMessages
 from pages.dashboard_page import DashboardPage
 
 
-def test_dashboard_is_displayed(dashboard_page: DashboardPage):
+def test_dashboard_page_is_displayed(dashboard_page: DashboardPage):
     expect(dashboard_page.page).to_have_url(DASHBOARD_URL)
     expect(dashboard_page.dashboard_heading).to_be_visible()
 
